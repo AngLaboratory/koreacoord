@@ -45,7 +45,23 @@ jobs:
       - run: uv build
 
       - name: Validate metadata
-        run: uvx --from twine --with 'readme-renderer[md]' twine check dist/*
+        run: uvx --from twine --with 'readme-renderer[md]' twine check --strict dist/*
+
+      - name: Verify the README renders the way PyPI will render it
+        run: |
+          uv run --isolated --no-project --with 'readme-renderer[md]' python - <<'PY'
+          import pathlib, sys
+          import readme_renderer.markdown as md
+
+          # 렌더러가 없으면 render() 가 조용히 None 을 돌려주고 twine check 는 그냥 통과한다.
+          html = md.render(pathlib.Path("README.md").read_text(encoding="utf-8"))
+          if html is None:
+              sys.exit("README did not render; PyPI would show the raw text")
+          for needle, label in (("<table", "tables"), ("<pre", "code blocks"), ("<img", "badges")):
+              if needle not in html:
+                  sys.exit(f"rendered README is missing {label}")
+          print(f"README renders to {len(html)} bytes, with tables, code blocks and badges")
+          PY
 
       - name: Install the wheel and smoke test it
         run: |
