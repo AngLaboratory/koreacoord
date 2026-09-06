@@ -1,5 +1,9 @@
 # koreacoord
 
+[![CI](https://github.com/AngLaboratory/koreacoord/actions/workflows/ci.yml/badge.svg)](https://github.com/AngLaboratory/koreacoord/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/koreacoord)](https://pypi.org/project/koreacoord/)
+[![Python](https://img.shields.io/pypi/pyversions/koreacoord)](https://pypi.org/project/koreacoord/)
+
 Convert between the coordinate systems used on Korean maps — TM, KTM, UTM 52N,
 Kakao's Congnamul grid, WGS84 and Bessel/Tokyo — with no dependencies.
 
