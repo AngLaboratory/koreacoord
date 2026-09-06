@@ -4,6 +4,12 @@ on:
   push:
     tags: ["v*"]
   workflow_dispatch:
+    inputs:
+      target:
+        description: "어디에 게시할지"
+        type: choice
+        options: [testpypi, pypi]
+        default: testpypi
 
 jobs:
   build:
@@ -32,21 +38,40 @@ jobs:
 
       - run: uv build
 
-      - name: Validate metadata
-        run: uvx twine check dist/*
+      - name: Validate metadata and README rendering
+        run: uvx --from twine --with 'readme-renderer[md]' twine check --strict dist/*
 
       - uses: actions/upload-artifact@v4
         with:
           name: dist
           path: dist/
 
-  publish:
+  testpypi:
+    name: Publish to TestPyPI
+    if: github.event_name == 'workflow_dispatch' && inputs.target == 'testpypi'
+    needs: build
+    runs-on: ubuntu-latest
+    environment: testpypi
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+
+  pypi:
     name: Publish to PyPI
+    if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.target == 'pypi')
     needs: build
     runs-on: ubuntu-latest
     environment: pypi
     permissions:
-      id-token: write   # Trusted Publishing 용. 토큰 없이 발행합니다.
+      id-token: write
     steps:
       - uses: actions/download-artifact@v4
         with:

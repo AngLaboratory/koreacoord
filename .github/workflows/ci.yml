@@ -45,7 +45,7 @@ jobs:
       - run: uv build
 
       - name: Validate metadata
-        run: uvx twine check dist/*
+        run: uvx --from twine --with 'readme-renderer[md]' twine check dist/*
 
       - name: Install the wheel and smoke test it
         run: |
